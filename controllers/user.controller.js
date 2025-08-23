@@ -1,56 +1,78 @@
-import express from 'express'
-import mongoose from 'mongoose'
-import users from '../models/user.model.js'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
+import users from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
+export const SignUp = async (req, res) => {
+  try {
+    const { fullname, email, password, role, club_id, avatar } = req.body;
 
-export const SignUp = (req, res) => {
-
-    const { fullname, email, password, confirmpassword, avatar, clubid } = req.body
-
-    users.findOne({ $or: [{ email: email, fullname: fullname }] }).then(saveuser => {
-        if (saveuser) {
-            res.status(422).json({ erro: 'Users already exists' })
-        } else {
-            bcrypt.hash(password, 12).then((hashpass) => {
-                users.create({
-                    fullname: fullname,
-                    email: email,
-                    password: hashpass,
-                    confirmPassword: hashpass,
-                    avatar: avatar,
-                    clubId: clubid
-                }).then((users) => {
-                    res.json('Singup Successfull')
-                }).catch(error => {
-                    console.log(error)
-                    res.status(422).json({ error: "Please try again with unique details" })
-                })
-            })
-        }
-    })
-}
-
-
-export const SingIn = (req, res) => {
-    const { email, password } = req.body
-    if (!email || !password) {
-        res.status(422).json({ error: "There is an erro" })
-    } else {
-        users.findOne({ email }).then(saveuser => {
-            if (!saveuser) {
-            } else {
-                bcrypt.compare(password, saveuser.password).then(match => {
-                    if (!match) {
-                        res.status(422).json({ error: "There is a error" })
-                    } else {
-                        const token = jwt.sign({ _id: saveuser._id }, process.env.JWT_SECRET)
-                        res.json({ id: saveuser._id, token: token })
-                    }
-                })
-            }
-        })
+    if (!fullname || !email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Please provide all required fields" });
     }
-}
 
+    const existingUser = await users.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const hashpass = await bcrypt.hash(password, 12);
+
+    const newUser = await users.create({
+      fullname,
+      email,
+      password: hashpass,
+      avatar: avatar || null,
+      role: role || "student",
+      club_id: club_id || null,
+      clubRole: null,
+    });
+
+    res.status(201).json({ message: "Signup successful", userId: newUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong, please try again" });
+  }
+};
+
+export const SignIn = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      message: "Signin successful",
+      token,
+      user: {
+        id: user._id,
+        fullname: user.fullname,
+        email: user.email,
+        role: user.role,
+        club_id: user.club_id,
+        clubRole: user.clubRole,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong, please try again" });
+  }
+};
