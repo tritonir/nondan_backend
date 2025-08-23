@@ -25,27 +25,28 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Main role: student or club_member
+    // Main role is optional now, could be inferred from clubs
     role: {
       type: String,
       enum: ["student", "club_member"],
       default: "student",
-      required: true,
     },
 
-    // If user is a club member, link them to a club
-    club_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Club",
-      default: null, // null means no club yet
-    },
-
-    // Sub-role inside a club (only applies if role === "club_member")
-    clubRole: {
-      type: String,
-      enum: ["admin", "moderator", "editor", "contributor", null],
-      default: null,
-    },
+    // Array of club memberships with role per club
+    clubs: [
+      {
+        club_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Club",
+          required: false,
+        },
+        clubRole: {
+          type: String,
+          enum: ["admin", "moderator", "editor", "contributor"],
+          required: false,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
