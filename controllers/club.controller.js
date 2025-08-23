@@ -1,4 +1,5 @@
 import Club from "../models/club.model.js";
+import User from "../models/user.model.js";
 
 export const createClub = async (req, res) => {
   try {
@@ -31,6 +32,12 @@ export const createClub = async (req, res) => {
       contact: contact || {},
       members: [req.user._id],
       followers: [],
+    });
+
+    await User.findByIdAndUpdate(req.user._id, {
+      club_id: newClub._id,
+      clubRole: "admin",
+      role: "club_member",
     });
 
     res.status(201).json({ message: "Club created", club: newClub });
