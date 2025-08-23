@@ -1,0 +1,30 @@
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
+import rootRouter from "./routes/root.js";
+import authorization from './routes/user.route.js'
+
+dotenv.config();
+
+const app = express();
+
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
+
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+const port = process.env.PORT;
+
+app.use("/api", rootRouter);
+
+app.listen(port, () => {
+  connectDB();
+  console.log(`Server is running on port ${port}`);
+});
