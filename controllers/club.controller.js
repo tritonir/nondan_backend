@@ -35,8 +35,7 @@ export const createClub = async (req, res) => {
     });
 
     await User.findByIdAndUpdate(req.user._id, {
-      club_id: newClub._id,
-      clubRole: "admin",
+      $push: { clubs: { club_id: newClub._id, clubRole: "admin" } },
       role: "club_member",
     });
 

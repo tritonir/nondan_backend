@@ -2,7 +2,7 @@ import Event from "../models/event.model.js";
 import Club from "../models/club.model.js";
 import User from "../models/user.model.js";
 
-// Permissions
+// Role permissions
 export const clubRolePermissions = {
   admin: {
     canDeleteClub: true,
@@ -50,12 +50,12 @@ export const clubRolePermissions = {
   },
 };
 
-const hasPermission = (user, permission) => {
-  if (user.role === "student") return false;
-  if (!user.clubRole) return false;
-  return clubRolePermissions[user.clubRole]?.[permission] || false;
+// Helper to get user's membership in a specific club
+const getMembership = (user, clubId) => {
+  return user.clubs?.find((c) => c.club_id.toString() === clubId.toString());
 };
 
+// CREATE EVENT
 export const createEvent = async (req, res) => {
   try {
     const {
@@ -85,16 +85,17 @@ export const createEvent = async (req, res) => {
         .json({ error: "Please provide all required fields" });
     }
 
-    if (!hasPermission(user, "canCreateEvents")) {
+    const membership = getMembership(user, club_id);
+    if (!membership) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to create events" });
+        .json({ error: "You are not a member of this club" });
     }
 
-    if (user.club_id?.toString() !== club_id) {
-      return res
-        .status(403)
-        .json({ error: "You can only create events for your own club" });
+    if (!clubRolePermissions[membership.clubRole]?.canCreateEvents) {
+      return res.status(403).json({
+        error: "You do not have permission to create events in this club",
+      });
     }
 
     const event = await Event.create({
@@ -119,13 +120,13 @@ export const createEvent = async (req, res) => {
   }
 };
 
+// GET ALL EVENTS
 export const getEvents = async (req, res) => {
   try {
     const events = await Event.find()
       .populate("club_id", "name category logo")
       .populate("user_id", "fullname email avatar")
       .populate("attendees.user", "fullname email avatar");
-
     res.json(events);
   } catch (err) {
     console.error(err);
@@ -133,6 +134,7 @@ export const getEvents = async (req, res) => {
   }
 };
 
+// GET SINGLE EVENT
 export const getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
@@ -149,16 +151,23 @@ export const getEvent = async (req, res) => {
   }
 };
 
+// UPDATE EVENT
 export const updateEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
     const user = req.user;
+    const membership = getMembership(user, event.club_id);
+    if (!membership) {
+      return res
+        .status(403)
+        .json({ error: "You are not a member of this club" });
+    }
 
     if (
       event.user_id.toString() !== user._id.toString() &&
-      !hasPermission(user, "canEditAllEvents")
+      !clubRolePermissions[membership.clubRole]?.canEditAllEvents
     ) {
       return res
         .status(403)
@@ -175,16 +184,23 @@ export const updateEvent = async (req, res) => {
   }
 };
 
+// DELETE EVENT
 export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
     const user = req.user;
+    const membership = getMembership(user, event.club_id);
+    if (!membership) {
+      return res
+        .status(403)
+        .json({ error: "You are not a member of this club" });
+    }
 
     if (
       event.user_id.toString() !== user._id.toString() &&
-      !hasPermission(user, "canDeleteAllEvents")
+      !clubRolePermissions[membership.clubRole]?.canDeleteAllEvents
     ) {
       return res
         .status(403)
@@ -192,7 +208,6 @@ export const deleteEvent = async (req, res) => {
     }
 
     await Event.findByIdAndDelete(req.params.eventId);
-
     await Club.findByIdAndUpdate(event.club_id, {
       $pull: { events: event._id },
     });

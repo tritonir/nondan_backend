@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export const SignUp = async (req, res) => {
   try {
-    const { fullname, email, password, role, club_id, avatar } = req.body;
+    const { fullname, email, password, role, avatar } = req.body;
 
     if (!fullname || !email || !password) {
       return res
@@ -25,11 +25,10 @@ export const SignUp = async (req, res) => {
       password: hashpass,
       avatar: avatar || null,
       role: role || "student",
-      club_id: club_id || null,
-      clubRole: null,
+      clubs: [],
     });
 
-    res.status(201).json({ message: "Signup successful", userId: newUser });
+    res.status(201).json({ message: "Signup successful", userId: newUser._id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong, please try again" });
@@ -44,7 +43,10 @@ export const SignIn = async (req, res) => {
       return res.status(400).json({ error: "Email and password required" });
     }
 
-    const user = await users.findOne({ email });
+    const user = await users
+      .findOne({ email })
+      .populate("clubs.club_id", "name");
+
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -66,9 +68,8 @@ export const SignIn = async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         role: user.role,
-        club_id: user.club_id,
-        clubRole: user.clubRole,
         avatar: user.avatar,
+        clubs: user.clubs,
       },
     });
   } catch (error) {
