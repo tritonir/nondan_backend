@@ -1,5 +1,9 @@
 # Nondan Backend
 
+![Nondan Cover](./cover.png)
+
+🎨 **Design**: [View on Figma](https://www.figma.com/design/TGEWoiUVvVJb5KE59obG7K/Nondan---Event-Management-Platform)
+
 A comprehensive backend API for the Nondan event management platform built with Node.js, Express.js, and MongoDB.
 
 ## ✨ Features
@@ -86,23 +90,9 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 
 #### POST `/api/auth/register`
 Register a new user
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securePassword123",
-  "role": "student"
-}
-```
 
 #### POST `/api/auth/login`
 Login user
-```json
-{
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-```
 
 ### User Endpoints
 
@@ -123,16 +113,6 @@ Get event by ID
 
 #### POST `/api/events`
 Create new event (Admin only)
-```json
-{
-  "title": "Tech Conference 2024",
-  "description": "Annual technology conference",
-  "date": "2024-12-15T10:00:00Z",
-  "location": "Main Auditorium",
-  "category": "Technology",
-  "maxAttendees": 200
-}
-```
 
 #### PUT `/api/events/:id`
 Update event (Admin only)
@@ -170,11 +150,6 @@ Leave club (Protected)
 
 #### POST `/api/ai/chat`
 Chat with AI assistant (Protected)
-```json
-{
-  "message": "Tell me about upcoming tech events"
-}
-```
 
 ## 📁 Project Structure
 
@@ -200,8 +175,6 @@ nondan_backend/
 │   ├── event.route.js        # Event endpoint routes
 │   ├── root.js               # Main router
 │   └── user.route.js         # User endpoint routes
-├── .env                      # Environment variables
-├── .gitignore                # Git ignore rules
 ├── index.js                  # Application entry point
 ├── package.json              # Dependencies and scripts
 └── README.md                 # This file
@@ -210,49 +183,19 @@ nondan_backend/
 ## 🗄 Database Models
 
 ### User Model
-```javascript
-{
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  role: String (enum: ['student', 'admin']),
-  avatar: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+- User authentication and profile information
+- Role-based access control (student/admin)
+- Password hashing and JWT token management
 
 ### Event Model
-```javascript
-{
-  title: String,
-  description: String,
-  date: Date,
-  location: String,
-  category: String,
-  status: String (enum: ['upcoming', 'ongoing', 'completed']),
-  maxAttendees: Number,
-  attendees: [ObjectId],
-  club: ObjectId,
-  createdBy: ObjectId,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+- Event details with date, location, and capacity
+- Registration system with attendee tracking
+- Status management (upcoming/ongoing/completed)
 
 ### Club Model
-```javascript
-{
-  name: String,
-  description: String,
-  category: String,
-  members: [ObjectId],
-  admins: [ObjectId],
-  events: [ObjectId],
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+- Club information and membership management
+- Admin and member role assignments
+- Event association and organization
 
 ## 🔐 Authentication
 
@@ -304,7 +247,10 @@ Authorization: Bearer <your_jwt_token>
 
 This project is licensed under the ISC License.
 
+## 📞 Support
+
+For support, email hello@nondan.com or create an issue in the repository.
+
 ---
 
 **Note**: This is a development version. Make sure to update security configurations and environment variables for production deployment.
-
