@@ -2,7 +2,7 @@
 
 ![Nondan Cover](./cover.png)
 
-🎨 **Design**: [View on Figma](https://www.figma.com/design/TGEWoiUVvVJb5KE59obG7K/Nondan---Event-Management-Platform)
+## 🎨 **Design**: [View on Figma](https://www.figma.com/design/TGEWoiUVvVJb5KE59obG7K/Nondan---Event-Management-Platform)
 
 A comprehensive backend API for the Nondan event management platform built with Node.js, Express.js, and MongoDB.
 
