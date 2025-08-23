@@ -1,32 +1,38 @@
-import jwt from 'jsonwebtoken'
-import mongoose from 'mongoose'
-import users from '../models/user.model.js'
+import jwt from "jsonwebtoken";
+import users from "../models/user.model.js";
 
 const userjwt = (req, res, next) => {
-    const { authorization } = req.headers
-    if (!authorization) {
-        res.status(422).json({ error: "Not valid" })
-    } else {
+  const { authorization } = req.headers;
 
-        const token = authorization.replace("Bearer ", "")
-        jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-            if (err) {
-                console.log(err)
-                res.status(422).json({ error: "logout" })
-            } else {
-                const { _id } = payload
-                users.findById(_id).then(saveusers => {
-                    if (!saveusers) {
-                        res.status(422).json({ error: "logout" })
-                    } else {
-                        res.user = saveusers
-                    }
-                })
-            }
+  if (!authorization) {
+    return res.status(401).json({ error: "Authorization token required" });
+  }
 
-        })
+  const token = authorization.replace("Bearer ", "");
 
+  jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).json({ error: "Invalid or expired token" });
     }
-}
 
-export default userjwt
+    try {
+      const { _id } = payload;
+      const user = await users.findById(_id);
+
+      if (!user) {
+        return res
+          .status(401)
+          .json({ error: "User not found, please login again" });
+      }
+
+      req.user = user; // attach user to request
+      next(); // pass control
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+};
+
+export default userjwt;

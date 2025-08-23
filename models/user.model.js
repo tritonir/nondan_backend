@@ -1,39 +1,54 @@
 import mongoose from "mongoose";
 
-const signupSchema = new mongoose.Schema({
-
+const userSchema = new mongoose.Schema(
+  {
     fullname: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
+      trim: true,
     },
+
     email: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
     },
+
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
-    confirmPassword: {
-        type: String,
-        required: true
-    },
+
     avatar: {
-        type: String,
-        default: null,
+      type: String,
+      default: null,
     },
-    clubId: {
-        type: String,
-        required: true,
-        default: 'student',
-    }
-},
-    {
-        timestamps: true,
-    }
 
-)
+    // Main role: student or club_member
+    role: {
+      type: String,
+      enum: ["student", "club_member"],
+      default: "student",
+      required: true,
+    },
 
+    // If user is a club member, link them to a club
+    club_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Club",
+      default: null, // null means no club yet
+    },
 
-const users = mongoose.model('users', signupSchema);
-export default users
+    // Sub-role inside a club (only applies if role === "club_member")
+    clubRole: {
+      type: String,
+      enum: ["admin", "moderator", "editor", "contributor", null],
+      default: null,
+    },
+  },
+  { timestamps: true }
+);
+
+const User = mongoose.model("User", userSchema);
+export default User;
