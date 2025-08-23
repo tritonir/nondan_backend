@@ -2,20 +2,6 @@
 
 A comprehensive backend API for the Nondan event management platform built with Node.js, Express.js, and MongoDB.
 
-## 📋 Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-- [Database Models](#database-models)
-- [Authentication](#authentication)
-- [Development](#development)
-- [Contributing](#contributing)
-
 ## ✨ Features
 
 - **User Management**: Complete authentication system with JWT tokens
