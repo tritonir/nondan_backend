@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     // Main role is optional now, could be inferred from clubs
     role: {
       type: String,
-      enum: ["student", "club_member"],
+      enum: ["student", "Club Member"],
       default: "student",
     },
 
