@@ -1,6 +1,7 @@
 import Event from "../models/event.model.js";
 import Club from "../models/club.model.js";
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
 
 // Role permissions
 export const clubRolePermissions = {
@@ -62,7 +63,8 @@ export const createEvent = async (req, res) => {
       title,
       description,
       date,
-      time,
+      endDate,
+      requirements,
       location,
       category,
       image_url,
@@ -75,7 +77,8 @@ export const createEvent = async (req, res) => {
       !title ||
       !description ||
       !date ||
-      !time ||
+      !requirements ||
+      !endDate ||
       !location ||
       !category ||
       !club_id
@@ -102,7 +105,7 @@ export const createEvent = async (req, res) => {
       title,
       description,
       date,
-      time,
+      endDate,
       location,
       category,
       image_url: image_url || null,
@@ -187,7 +190,8 @@ export const updateEvent = async (req, res) => {
 // DELETE EVENT
 export const deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId);
+    const event = await Event.findById(req.params.id);
+    // console.log(event)
     if (!event) return res.status(404).json({ error: "Event not found" });
 
     const user = req.user;
@@ -216,5 +220,45 @@ export const deleteEvent = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to delete event" });
+  }
+};
+
+export const addEventToUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { event_id } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(event_id)) {
+      return res.status(400).json({ message: 'Invalid event_id' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (user.events.some(e => e.event_id.toString() === event_id)) {
+      return res.status(400).json({ error: 'Event already added for this user' });
+    }
+
+    user.events.push({ event_id });
+    await user.save();
+
+    res.status(200).json({ message: 'Event added to user', events: user.events });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getUserEvents = async (req, res) => {
+  // return res.json('flkslkdfjs')
+  try {
+    const user = await User.findById(req.user._id).populate("events.event_id");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    // console.log("sklflsjdlkfjs")
+    const events = user.events.map(e => e);
+    return res.json(events);
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ message: "Server error" });
   }
 };

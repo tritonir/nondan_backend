@@ -6,7 +6,7 @@ const eventSchema = new mongoose.Schema(
     description: { type: String, required: true, trim: true },
 
     date: { type: String, required: true }, // example: 2025-09-10
-    time: { type: String, required: true }, // example: "14:30"
+    endDate: { type: String, required: true }, // example: "14:30"
 
     location: { type: String, required: true, trim: true },
 
@@ -42,6 +42,7 @@ const eventSchema = new mongoose.Schema(
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         registeredAt: { type: Date, default: Date.now },
+        required: { type: Boolean, default: false }
       },
     ],
   },
