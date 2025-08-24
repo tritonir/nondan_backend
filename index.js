@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import rootRouter from "./routes/root.js";
-import authorization from './routes/user.route.js'
 
 dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 5003;
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN;
 
@@ -20,11 +20,18 @@ app.use(
 
 app.use(express.json());
 
-const port = process.env.PORT;
-
 app.use("/api", rootRouter);
 
-app.listen(port, () => {
-  connectDB();
-  console.log(`Server is running on port ${port}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to connect to DB", error);
+    process.exit(1);
+  }
+};
+
+startServer();
